@@ -1,0 +1,17 @@
+<html>
+<head></head>
+<body>
+	Player 1
+	<script src='./Accelerometer.js'></script>
+	<script src="http://128.237.126.96:3000/socket.io/socket.io.js"></script>
+	<script>
+		var socket = io.connect('http://128.237.126.96:3000/');
+	    // socket.emit('send', {stuff:'Player 1 shit'});
+	    var a = new Accelerometer(); 
+	    a.startListening(); 
+	    setInterval(function(){
+	    	socket.emit('send', {player:'1', y:a.y});
+	    }, 5);
+	</script>
+</body> 
+</html>
