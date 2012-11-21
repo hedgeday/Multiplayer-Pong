@@ -1,8 +1,15 @@
 function acceptLogin(){   
-    startGame();
+    // startGame();
+    var socket = io.connect('http://192.168.1.5:3000/');
+    socket.on('receive', function(data){
+        if (data.start){
+            console.log("STARTED");
+            startGame(socket);
+        }
+    })
 };
 
-function startGame() {
+function startGame(socket) {
     var canvas = document.getElementById("gameCanvas");
     var ctx = canvas.getContext("2d");
     var ballX = 400;
@@ -16,7 +23,6 @@ function startGame() {
     var p1Score = 0; 
     var p2Score = 0; 
     
-    var socket = io.connect('http://128.237.126.96:3000/');
     socket.on('receive', function(data){
         // console.log('Got this: ' + data.player);
         // console.log(data.y);
@@ -33,11 +39,11 @@ function startGame() {
         }
         if (data.player == '2'){
             if (Math.abs(data.y) > Acc2Prev){
-                if (paddle2Y + 2 <= 400)
+                if (paddle2Y <= 398)
                     paddle2Y += 2;
             }
             else{
-                if (paddle2Y - 2 >= 0)
+                if (paddle2Y >= 2)
                     paddle2Y -= 2;
             }
             Acc2Prev = data.y; 
@@ -50,7 +56,7 @@ function startGame() {
     
     drawPaddles(25,25);
     
-    setInterval(drawBall, 50);
+    var interval = setInterval(drawBall, 50);
     
     function resetPlay(){
         ballX = 400;
@@ -75,11 +81,11 @@ function startGame() {
         checkCollisions();
         if(directionX)
         {
-            ballX +=10;
+            ballX +=20;
             if (directionY)
-                ballY +=10;
+                ballY +=20;
             else
-                ballY -=10;
+                ballY -=20;
             ctx.beginPath();
             ctx.arc(ballX,ballY,20,0,2*Math.PI);
             ctx.fill();
@@ -87,11 +93,11 @@ function startGame() {
         }
         else
         {
-            ballX -=10;
+            ballX -=20;
             if (directionY)
-                ballY +=10;
+                ballY +=20;
             else
-                ballY -=10;
+                ballY -=20;
             ctx.beginPath();
             ctx.arc(ballX,ballY,20,0,2*Math.PI);
             ctx.fill();
@@ -114,26 +120,42 @@ function startGame() {
         ctx.fillText('Scores:', 368, 575);
         ctx.fillText('Player 1:' + p1Score, 200, 610);
         ctx.fillText('Player 2:' + p2Score, 485, 610);
+        if (p1Score == 20) {
+            alert('Player 1 wins!');
+            endGame();
+        }
+        if (p2Score == 20){
+            alert('Player 2 wins!');
+            endGame();
+        }
+    }
+
+    function endGame(){
+        clearInterval(interval);
+        ctx.fillStyle = 'rgb(0,0,0)';
+        ctx.fillRect(0, 0, 800, 550);
     }
 
     function checkCollisions(){
         if (ballX <= 68) {
-            if (paddle1Y < ballY && (paddle1Y+150) > ballY)
-                directionX = true;
+            if (paddle1Y < ballY && (paddle1Y+160) > ballY){
+                if (ballX > 48)
+                    directionX = true;
+            }
             else{
                 if (ballX < 0){
-                    // console.log('Player 2 Scored!');
                     p2Score++; 
                     resetPlay();
                 }
             }
         }
         if (ballX >= 732){
-            if (paddle2Y < ballY && (paddle2Y+150) > ballY)
-                directionX = false;
+            if (paddle2Y < ballY && (paddle2Y+160) > ballY){
+                if (ballX < 750)
+                    directionX = false;
+            }
             else{
                 if (ballX > 800){
-                    // console.log('Player 1 Scored!'); 
                     p1Score++;
                     resetPlay();
                 }

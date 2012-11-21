@@ -2,16 +2,53 @@
 <head></head>
 <body>
 	Player 1
+
+	 <form id="login" action="/login" method="post">
+        <div>
+            <label>Username:</label>
+            <input type="text" name="username"/>
+        </div>
+        <div>
+            <label>Password:</label>
+            <input type="password" name="password"/>
+        </div>
+        <div>
+            <input type="submit" value="Log In"/>
+        </div>
+    </form>
+
 	<script src='./Accelerometer.js'></script>
-	<script src="http://128.237.126.96:3000/socket.io/socket.io.js"></script>
+	<script src="http://192.168.1.5:3000/socket.io/socket.io.js"></script>
 	<script>
-		var socket = io.connect('http://128.237.126.96:3000/');
-	    // socket.emit('send', {stuff:'Player 1 shit'});
-	    var a = new Accelerometer(); 
-	    a.startListening(); 
-	    setInterval(function(){
-	    	socket.emit('send', {player:'1', y:a.y});
-	    }, 5);
-	</script>
+    
+        function hasSessionCookie(){
+        	console.log(document.cookie);
+            var cookieArray = document.cookie.split(';');
+            var cookies = {};
+            for (var i = 0; i < cookieArray.length; i++){
+                var parts = cookieArray[i].split('=');
+                var key = parts[0].trim();
+                var value = parts[1];
+                cookies[key] = value;
+            }
+            //user will be an id if they're logged in
+            return cookies['user'] !== 'none';
+        }
+
+        window.onload = function() {
+
+            if (hasSessionCookie()){
+                document.getElementById('login').style.display = 'none';
+
+                var socket = io.connect('http://192.168.1.5:3000/');
+			    var a = new Accelerometer(); 
+			    a.startListening(); 
+			    setInterval(function(){
+			    	socket.emit('send', {player:'1', y:a.y});
+			    }, 2);
+            }
+
+        };
+    </script>
 </body> 
 </html>
